@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+</head>
+<body>
+    <a-scene cursor="rayOrigin: mouse">
+        <a-assets>
+            <!-- Load the local image -->
+            <img id="localImage" src="background.jpg">
+            <img id="pillarTexture" src="background.jpg">
+            <a-asset-item id="model" response-type="arraybuffer" src="Hip Hop Dancing (2).glb"></a-asset-item>
+            <a-asset-item id="modeltwo" response-type="arraybuffer" src="allan_the_grey.glb"></a-asset-item>
+        </a-assets>
+
+        <!-- Large building-like structures -->
+        <!-- Adjusted positions and heights to extend pillars up to the plane -->
+        <a-box material="src: #pillarTexture" position="-20 50 -25" width="10" height="100" depth="10"></a-box>
+        <a-box material="src: #pillarTexture" position="20 50 -25" width="10" height="100" depth="10"></a-box>
+        <a-box material="src: #pillarTexture" position="-20 50 25" width="10" height="100" depth="10"></a-box>
+        <a-box material="src: #pillarTexture" position="20 50 25" width="10" height="100" depth="10"></a-box>
+
+        <!-- Create an entity to hold and display the glTF model -->
+        <a-entity position="0 1 -3" animation-mixer="clip: *; loop: repeat" gltf-model="#model"></a-entity>
+
+        <!-- Camera entity with controls -->
+        <a-entity camera look-controls wasd-controls></a-entity>
+
+        <a-box id="ledButton" color="blue" position="0 0.5 0" rotation="0 45 0" scale="1 1 1"></a-box>
+
+        <!-- Set the background to the local image -->
+        <a-sky src="#localImage"></a-sky>
+
+        <!-- Change the ground plane material to metallic black -->
+        <a-plane material="color: black; metalness: 1; roughness: 0.2" rotation="-90 0 0" width="100" height="100" depth="1"></a-plane>
+
+        <a-plane material="color: black; metalness: 1; roughness: 0.2" rotation="-300 0 0" width="100" height="100" position="0 100 0" depth="50"></a-plane>
+
+        <!-- Second level plane -->
+        <a-plane material="src: #localImage; metalness: 1; roughness: 0.5" rotation="-90 0 0" width="70" height="70" position="0 25 0"></a-plane>
+
+        <!-- Create cubes around a central point -->
+        <a-entity id="cubeCircle"></a-entity>
+
+        <a-gltf-model src="hw_filemain.glb" position="0 4 -10" scale="0.5 0.5 0.5"></a-gltf-model>
+        <a-gltf-model src="hw_filemain.glb" position="5 4 -10" scale="0.5 0.5 0.5"></a-gltf-model>
+        <a-gltf-model src="hw_filemain.glb" position="10 15 -10" scale="1 2 1"></a-gltf-model>
+        <a-gltf-model src="hw_filemain.glb" position="-10 15 10" rotation="0 180 0" scale="1 2 1"></a-gltf-model>
+        <a-gltf-model src="hw_filemain.glb" position="-5 4 10" rotation="0 180 0" scale="0.5 0.5 0.5"></a-gltf-model>
+        <a-gltf-model src="hw_filemain.glb" position="0 4 10" rotation="0 180 0" scale="0.5 0.5 0.5"></a-gltf-model>
+
+        <!-- Entity for the glTF model -->
+        <a-entity position="0 1 -3" fbx-model="#model" animation-mixer="clip:mixamo.com"></a-entity>
+        <a-entity position="1 0 -10" gltf-model="#modeltwo"></a-entity>
+        <a-entity position="1 0 -14" gltf-model="#modeltwo"></a-entity>
+        <a-entity position="-1 0 -16" gltf-model="#modeltwo"></a-entity>
+    </a-scene>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const numShapes = 20;
+            const radius = 5;
+            const angleIncrement = (2 * Math.PI) / numShapes;
+            const cubeCircle = document.getElementById('cubeCircle');
+
+            for (let i = 0; i < numShapes; i++) {
+                const posX = radius * Math.cos(i * angleIncrement);
+                const posY = 0.5; // Adjusted to match the height of the blue box
+                const posZ = radius * Math.sin(i * angleIncrement);
+
+                const shapeEntity = document.createElement('a-box');
+                shapeEntity.setAttribute('position', `${posX} ${posY} ${posZ}`);
+                shapeEntity.setAttribute('color', '#' + Math.floor(Math.random() * 16777215).toString(16));
+                shapeEntity.setAttribute('width', '0.5');
+                shapeEntity.setAttribute('height', '0.5');
+                shapeEntity.setAttribute('depth', '0.5');
+
+                cubeCircle.appendChild(shapeEntity);
+
+                // Create a second circle around each cube
+                const secondCircle = document.createElement('a-entity');
+                secondCircle.setAttribute('position', `${posX} ${posY} ${posZ}`);
+                cubeCircle.appendChild(secondCircle);
+                for (let j = 0; j < numShapes; j++) {
+                    const secondPosX = radius * Math.cos(j * angleIncrement);
+                    const secondPosY = 0.5;
+                    const secondPosZ = radius * Math.sin(j * angleIncrement);
+
+                    const secondShapeEntity = document.createElement('a-box');
+                    secondShapeEntity.setAttribute('position', `${secondPosX} ${secondPosY} ${secondPosZ}`);
+                    secondShapeEntity.setAttribute('color', '#' + Math.floor(Math.random() * 16777215).toString(16));
+                    secondShapeEntity.setAttribute('width', '0.3');
+                    secondShapeEntity.setAttribute('height', '0.3');
+                    secondShapeEntity.setAttribute('depth', '0.3');
+
+                    secondCircle.appendChild(secondShapeEntity);
+                }
+            }
+        });
+
+        const socket = io();
+        const ledButton = document.getElementById('ledButton');
+        const camera = document.querySelector('[camera]');
+
+        ledButton.addEventListener('click', function () {
+            toggleLed('1'); // Turn on LED
+        });
+
+        function toggleLed(value) {
+            socket.emit('toggle', value);
+        }
+
+        // Listen for keydown events
+        window.addEventListener('keydown', function (event) {
+            const key = event.key.toLowerCase();
+
+            // Move camera up when P key is pressed
+            if (key === 'p') {
+                camera.object3D.position.y += 0.1;
+            }
+
+            // Move camera down when L key is pressed
+            if (key === 'l') {
+                camera.object3D.position.y -= 0.1;
+            }
+        });
+    </script>
+</body>
+</html>
